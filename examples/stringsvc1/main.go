@@ -11,6 +11,9 @@ import (
 	httptransport "github.com/go-kit/kit/transport/http"
 )
 
+/*
+business logic
+*/
 // StringService provides operations on strings.
 type StringService interface {
 	Uppercase(string) (string, error)
@@ -24,7 +27,6 @@ func (stringService) Uppercase(s string) (string, error) {
 	return strings.ToUpper(s), nil
 }
 
-
 func main() {
 	svc := stringService{}
 	uppercaseHandler := httptransport.NewServer(
@@ -36,6 +38,7 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
+//Go kit provides much of its functionality through an abstraction called an
 func makeUppercaseEndpoint(svc StringService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(uppercaseRequest)
@@ -46,7 +49,6 @@ func makeUppercaseEndpoint(svc StringService) endpoint.Endpoint {
 		return uppercaseResponse{v, ""}, nil
 	}
 }
-
 func decodeUppercaseRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	var request uppercaseRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
@@ -54,15 +56,17 @@ func decodeUppercaseRequest(_ context.Context, r *http.Request) (interface{}, er
 	}
 	return request, nil
 }
-
 func encodeResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
 	return json.NewEncoder(w).Encode(response)
 }
 
+/*
+rpc model
+Requests and responses
+*/
 type uppercaseRequest struct {
 	S string `json:"s"`
 }
-
 type uppercaseResponse struct {
 	V   string `json:"v"`
 	Err string `json:"err,omitempty"` // errors don't define JSON marshaling
